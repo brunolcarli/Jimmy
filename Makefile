@@ -10,3 +10,8 @@ migrate:
 
 run:
 	python manage.py runserver 0.0.0.0:6161
+
+pipe_run:
+	make install
+	make migrate
+	make run
