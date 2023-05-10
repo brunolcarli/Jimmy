@@ -28,11 +28,32 @@ class Query:
     def resolve_version(self, info, **kwargs):
         return settings.VERSION
 
-    questions = graphene.List(QuestionType)
+    questions = graphene.List(
+        QuestionType,
+        id=graphene.ID(),
+        id__in=graphene.List(graphene.ID),
+        question=graphene.String(),
+        question__icontains=graphene.String(),
+        scope=graphene.String(),
+        scope__in=graphene.List(graphene.String)
+    )
     def resolve_questions(self, info, **kwargs):
         return Question.objects.filter(**kwargs)
 
-    answers = graphene.List(AnswerType)
+    answers = graphene.List(
+        AnswerType,
+        user_id=graphene.String(),
+        user_id__in=graphene.List(graphene.String),
+        username=graphene.String(),
+        username__icontains=graphene.String(),
+        username__in=graphene.List(graphene.String),
+        is_anonymous=graphene.Boolean(),
+        sentiment=graphene.Boolean(),
+        question__id=graphene.ID(),
+        text_answer__icontains=graphene.String(),
+        datetime__gte=graphene.DateTime(),
+        datetime__lte=graphene.DateTime()
+    )
     def resolve_answers(self, info, **kwargs):
         return Answer.objects.filter(**kwargs)
 
