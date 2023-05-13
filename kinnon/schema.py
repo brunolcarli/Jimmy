@@ -1,4 +1,5 @@
 import graphene
+from django.db.models import Count
 from kinnon.models import Question, Answer
 from django.conf import settings
 
@@ -56,6 +57,11 @@ class Query:
     )
     def resolve_answers(self, info, **kwargs):
         return Answer.objects.filter(**kwargs)
+
+    less_answered_question  = graphene.Field(QuestionType)
+
+    def resolve_less_answered_question(self, info, **kwargs):
+        return Question.objects.order_by().annotate(Count('answer')).last()
 
 
 class CreateAnswer(graphene.relay.ClientIDMutation):
