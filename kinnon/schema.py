@@ -63,6 +63,11 @@ class Query:
     def resolve_less_answered_question(self, info, **kwargs):
         return Question.objects.order_by().annotate(Count('answer')).last()
 
+    most_answered_question  = graphene.Field(QuestionType)
+
+    def resolve_most_answered_question(self, info, **kwargs):
+        return Question.objects.order_by().annotate(Count('answer')).first()
+
 
 class CreateAnswer(graphene.relay.ClientIDMutation):
     answer = graphene.Field(AnswerType)
