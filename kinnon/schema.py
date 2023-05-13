@@ -61,12 +61,12 @@ class Query:
     less_answered_question  = graphene.Field(QuestionType)
 
     def resolve_less_answered_question(self, info, **kwargs):
-        return Question.objects.order_by('answer').annotate(Count('answer')).first()
+        return Question.objects.annotate(Count('answer')).order_by('answer').first()
 
     most_answered_question  = graphene.Field(QuestionType)
 
     def resolve_most_answered_question(self, info, **kwargs):
-        return Question.objects.order_by('answer').annotate(Count('answer')).last()
+        return Question.objects.annotate(Count('answer')).order_by('answer').last()
 
 
 class CreateAnswer(graphene.relay.ClientIDMutation):
