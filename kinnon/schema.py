@@ -5,6 +5,19 @@ from kinnon.models import Question, Answer
 from django.conf import settings
 
 
+
+class UserStatistics(graphene.ObjectType):
+    user_id = graphene.String()
+    username = graphene.String()
+    questions_answered = graphene.Int()
+    positive_sentiments = graphene.Int()
+    negative_sentiments = graphene.Int()
+    average_sentiment = graphene.Float()
+    first_answer_datetime = graphene.DateTime()
+    last_answer_datetime = graphene.DateTime()
+
+
+
 class QuestionType(graphene.ObjectType):
     id = graphene.ID()
     question = graphene.String()
@@ -70,7 +83,7 @@ class Query:
     def resolve_less_answered_question(self, info, **kwargs):
         return Question.objects.annotate(Count('answer')).order_by('answer').first()
 
-    most_answered_question  = graphene.Field(QuestionType)
+    most_answered_question = graphene.Field(QuestionType)
 
     def resolve_most_answered_question(self, info, **kwargs):
         return Question.objects.annotate(Count('answer')).order_by('answer').last()
@@ -82,6 +95,28 @@ class Query:
 
     def resolve_last_answer(self, info, **kwargs):
         return Answer.objects.filter(user_id=kwargs['user_id']).last()
+
+    user_statistics = graphene.Field(
+        UserStatistics,
+        user_id=graphene.String(required=True)
+    )
+
+    def resolve_user_statistics(self, info, **kwargs):
+        answers = Answer.objects.filter(user_id=kwargs['user_id'])
+        total = answers.count()
+        positives = answers.filter(sentiment=True).count()
+        negatives = answers.filter(sentiment=False).count()
+
+        return {
+            'user_id': kwargs['user_id'],
+            'username': answers.first().username,
+            'questions_answered': total,
+            'positive_sentiments': positives,
+            'negative_sentiments': negatives,
+            'average_sentiment': positives / total,
+            'first_answer_datetime': answers.first().datetime.astimezone(pytz.timezone('America/Sao_Paulo')),
+            'last_answer_datetime': answers.last().datetime.astimezone(pytz.timezone('America/Sao_Paulo')),
+        }
 
 
 class CreateAnswer(graphene.relay.ClientIDMutation):
