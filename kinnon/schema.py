@@ -1,3 +1,4 @@
+import pytz
 import graphene
 from django.db.models import Count
 from kinnon.models import Question, Answer
@@ -22,6 +23,12 @@ class AnswerType(graphene.ObjectType):
     question = graphene.Field(QuestionType)
     datetime = graphene.DateTime()
     sentiment = graphene.Boolean()
+
+    def resolve_datetime(self, info, **kwargs):
+        """
+        Resolve datetime to GMT-3 (America/Sao_Paulo)
+        """
+        return self.datetime.astimezone(pytz.timezone('America/Sao_Paulo'))
 
 
 class Query:
