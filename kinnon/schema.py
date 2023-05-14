@@ -68,6 +68,14 @@ class Query:
     def resolve_most_answered_question(self, info, **kwargs):
         return Question.objects.annotate(Count('answer')).order_by('answer').last()
 
+    last_answer = graphene.Field(
+        AnswerType,
+        user_id=graphene.String(required=True)
+    )
+
+    def resolve_last_answer(self, info, **kwargs):
+        return Answer.objects.filter(user_id=kwargs['user_id']).last()
+
 
 class CreateAnswer(graphene.relay.ClientIDMutation):
     answer = graphene.Field(AnswerType)
