@@ -14,7 +14,7 @@ import os
 import uuid
 
 
-VERSION = '0.0.6'
+VERSION = '0.0.7'
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
