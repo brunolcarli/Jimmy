@@ -1,8 +1,11 @@
+import calendar
+from datetime import datetime, timedelta
 import pytz
 import graphene
 from django.db.models import Count
-from kinnon.models import Question, Answer
 from django.conf import settings
+from kinnon.models import Question, Answer
+from kinnon.util import get_sentiment_week_progress
 
 
 
@@ -10,12 +13,15 @@ class UserStatistics(graphene.ObjectType):
     user_id = graphene.String()
     username = graphene.String()
     questions_answered = graphene.Int()
+    questions_answered_today = graphene.Int()
+    questions_answered_last_week = graphene.Int()
+    questions_answered_last_month = graphene.Int()
     positive_sentiments = graphene.Int()
     negative_sentiments = graphene.Int()
     average_sentiment = graphene.Float()
     first_answer_datetime = graphene.DateTime()
     last_answer_datetime = graphene.DateTime()
-
+    last_week_sentiment_progress = graphene.List(graphene.Float)
 
 
 class QuestionType(graphene.ObjectType):
@@ -106,16 +112,29 @@ class Query:
         total = answers.count()
         positives = answers.filter(sentiment=True).count()
         negatives = answers.filter(sentiment=False).count()
+        today = datetime.today()
+        last_week = today - timedelta(days=7)
+        last_month = today - timedelta(
+            days=max(calendar.monthcalendar(today.year, today.month)[-1])
+        )
 
         return {
             'user_id': kwargs['user_id'],
             'username': answers.first().username,
             'questions_answered': total,
+            'questions_answered_today': answers.filter(datetime=today).count(),
+            'questions_answered_last_week': answers.filter(
+                datetime__gte=last_week, datetime__lt=today).count(),
+            'questions_answered_last_month': answers.filter(
+                datetime__gte=last_month, datetime__lt=today).count(),
             'positive_sentiments': positives,
             'negative_sentiments': negatives,
             'average_sentiment': positives / total,
             'first_answer_datetime': answers.first().datetime.astimezone(pytz.timezone('America/Sao_Paulo')),
             'last_answer_datetime': answers.last().datetime.astimezone(pytz.timezone('America/Sao_Paulo')),
+            'last_week_sentiment_progress': get_sentiment_week_progress(
+                answers.filter(datetime__gte=last_week, datetime__lt=today)
+            )
         }
 
 
