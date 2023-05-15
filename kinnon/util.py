@@ -16,4 +16,4 @@ def get_sentiment_week_progress(queryset):
         sent, day = meta
         df.loc[(df.SENT==sent) & (df.DAY==day), 'COUNT'] = count
 
-    return list(df.groupby('DAY').SENT.mean().index)
+    return list(df.groupby('DAY').SENT.mean())
